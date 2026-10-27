@@ -36,7 +36,7 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install torch numpy matplotlib triton flash-attn liger-kernel
 ```
 
-Smoke-test the shared layer kit (no GPU needed):
+Smoke-test the shared layer kit:
 
 ```bash
 python -c "import torch; from nn2 import Swi; print(Swi(64, 8, 8)(torch.randn(2, 8, 64)).shape)"

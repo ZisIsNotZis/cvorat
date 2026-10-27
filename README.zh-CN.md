@@ -33,7 +33,7 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install torch numpy matplotlib triton flash-attn liger-kernel
 ```
 
-冒烟测试共享层组件（不需要 GPU）：
+冒烟测试共享层组件：
 
 ```bash
 python -c "import torch; from nn2 import Swi; print(Swi(64, 8, 8)(torch.randn(2, 8, 64)).shape)"
