@@ -2,21 +2,23 @@
 
 ## Classification
 
-Archive: migrated out of the private `~/my` collection (2026-09-30) so it is
-inspectable instead of rotting. Copied — the original was not modified.
+Public experiment archive. The notebooks were migrated from a private collection and are kept as a
+record of the work; they are not a maintained package.
 
 ## Status
 
-See `README.md` for what it is and an honest status line (`deprecated (<year> era)
-- kept as an archive` where applicable).
+- Shared layers: `nn.py` (first generation) and `nn2.py` (second generation).
+- Experiments: 68 notebooks, each a self-contained snapshot of one model or kernel idea.
+- Results: no write-up, no saved benchmark table and no pinned environment.
+- Maintenance: none. Reproduction reports are welcome; feature requests are out of scope.
 
 ## Evidence
 
-- Source: `~/my/cvorat` (private archive), copied verbatim except for junk
-  binaries, caches and any file that tripped the credential scanner.
-- `README.md` in this repo documents what it is, how to run it and its limits.
+- The notebooks and the two shared libraries are the source of truth for what was tried.
+- `README.md` states what the repository is, how to run it and what is missing.
+- License: AGPL-3.0, see `LICENSE`.
 
 ## Boundaries
 
-Not maintained. Kept for reference only. Any credentials/datasets found during
-migration were dropped, not carried over.
+Not maintained. Kept for reference only. Credentials and datasets found during migration were
+dropped rather than carried over, and the corpus used by the experiments is not included.
