@@ -30,7 +30,7 @@ git clone https://github.com/ZisIsNotZis/cvorat.git
 cd cvorat
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install torch numpy matplotlib triton flash-attn liger-kernel
+pip install torch numpy matplotlib triton flash-attn liger-kernel ipython jupyter
 ```
 
 冒烟测试共享层组件：
@@ -60,9 +60,11 @@ xb, yb = next(iter(dl))
   输入上，原始字节作为下一字节预测目标。
 - **窗口化与分组注意力。**`nn.Attn` 及后续变体封装 FlashAttention，支持因果窗口、分组
   query/key/value 投影和可选的 ALiBi 斜率。
-- **动态卷积。**`nn2.Dycnv` 为每个位置生成卷积权重，notebook 中把它和注意力组成混合块。
-- **累积状态层。**`nn2.Cumavg`、`Cummax` 和 `Cumdecay` 提供因果运行摘要，其中包含一个在
-  对数空间计算衰减的 Triton 融合算子（`cumdecay_fuseker`）。
+- **卷积与注意力并列。**`nn2.Cnv` 是窗口化、分组的卷积块；`cpa*` 实验把它和注意力、多项式层
+  放进同一个残差块，有时还叠在池化层级下。`nn2.Dycnv` 是组件里的动态权重变体：为每个位置
+  生成自己的卷积权重。
+- **累积状态层。**`nn2.Cumavg` 和 `nn2.Cummax` 提供因果运行摘要；组件里还有一个带符号的
+  累积衰减原型，配一个在对数空间计算衰减的 Triton 融合算子（`cumdecay_fuseker`）。
 - **紧凑组件。**LoRA 分解线性层、SwiGLU、RoPE 和自定义 remap 函数，让组装变体不需要大型
   框架。
 - **可读的实验记录。**68 个 notebook 覆盖模型形状、U-Net 式池化、Liger 融合、kernel 原型和
@@ -90,14 +92,17 @@ assets/logo.svg        项目标识
         → 下一字节交叉熵 → Plot / notebook 输出
 ```
 
-Notebook 会刻意复制层定义：每一份都是搜索到该阶段时的模型快照。`nn2.py` 是最接近稳定接口的
-部分；`nn.py` 保留下来是因为很多 notebook 仍然 `import` 它。
+Notebook 会刻意复制层定义：每一份都是搜索到该阶段时的模型快照。`nn.py` 和 `nn2.py` 是两个
+导入面：大多数 notebook 从其中一个取辅助函数（`from nn import …`、`from nn2 import *`），同时
+重写自己要研究的模型类。
 
 ## 如何开发
 
 这个仓库是 notebook 归档，不是可安装的包。
 
 - 用 Jupyter 从仓库根目录运行，这样 `import nn` / `import nn2` 才能解析到共享库。
+  `nn2.py` 在模块加载时导入 `triton` 和 `IPython.display`，即使不碰这两者的块也需要它们已
+  安装。
 - `nn.py` 在模块加载时导入 FlashAttention；`nn2.py` 采用可选导入，只有 FlashAttention 注意力
   层需要它。
 - 没有测试套件、CI、lockfile 或构建步骤。上面的冒烟测试是检查共享库能否导入并运行的最快
@@ -106,6 +111,9 @@ Notebook 会刻意复制层定义：每一份都是搜索到该阶段时的模�
   notebook 里的值；不要期待全局配置文件。
 - 复用组件是预期的工作流。先把需要的块复制进新 notebook，等它稳定后，再只把有用的部分合并
   回 `nn2.py`。
+- `nn2.py` 里有几个块已经和真正跑过的 notebook 副本脱节：`Cumdecay` 和 `cumdecay_fuse`
+  引用了已不存在的名字（`cum`、`hr`、`normr`、`tl.prograc_id`）。两者不一致时以 notebook
+  为准。
 
 ## 如何贡献
 
@@ -122,7 +130,7 @@ Notebook 会刻意复制层定义：每一份都是搜索到该阶段时的模�
 
 - [x] 第一代层组件（`nn.py`）：窗口化/分组注意力、SwiGLU、RoPE 和 remap。
 - [x] 第二代层组件（`nn2.py`）：动态卷积、LoRA 和累积状态层。
-- [x] 用于带符号累积衰减的 Triton 融合算子。
+- [x] 带符号累积衰减原型，含 Triton 融合算子（在对数空间计算衰减；编号 notebook 未使用）。
 - [x] 字节级 memmap 数据加载器与随机字节破坏目标。
 - [x] 68 个 notebook，覆盖模型形状、池化层级、Liger 变体和 kernel 原型。
 - [x] AGPL-3.0 许可证、项目标识和面向公众的文档。
