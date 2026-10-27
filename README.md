@@ -33,7 +33,7 @@ git clone https://github.com/ZisIsNotZis/cvorat.git
 cd cvorat
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
-pip install torch numpy matplotlib triton flash-attn liger-kernel
+pip install torch numpy matplotlib triton flash-attn liger-kernel ipython jupyter
 ```
 
 Smoke-test the shared layer kit:
@@ -64,10 +64,13 @@ numbered notebooks, while `liger-kernel` appears in the later Liger variants.
   random-byte corruption applied to the input and the original bytes as the next-byte target.
 - **Windowed and grouped attention.** `nn.Attn` and later variants wrap FlashAttention with causal
   windows, grouped query/key/value projections and optional ALiBi slopes.
-- **Dynamic convolution.** `nn2.Dycnv` generates its own convolution weights per position, and the
-  notebooks combine it with attention in hybrid blocks.
-- **Cumulative-state layers.** `nn2.Cumavg`, `Cummax` and `Cumdecay` provide causal running
-  summaries, including a fused Triton kernel (`cumdecay_fuseker`) that keeps the decay in log space.
+- **Convolution next to attention.** `nn2.Cnv` is the windowed, grouped conv block; the `cpa*`
+  experiments stack it in the same residual block as attention and a polynomial layer, sometimes
+  under a pooling hierarchy. `nn2.Dycnv` is the dynamic-weight variant in the kit: it generates its
+  convolution weights per position.
+- **Cumulative-state layers.** `nn2.Cumavg` and `nn2.Cummax` are causal running summaries, and the
+  kit carries a signed cumulative-decay prototype with a fused Triton kernel (`cumdecay_fuseker`)
+  that keeps the decay in log space.
 - **Compact building blocks.** LoRA-factorised linear layers, SwiGLU, RoPE and custom remapping
   functions make it cheap to assemble a variant without a large framework.
 - **A readable experiment log.** 68 notebooks cover model shapes, U-Net-style pooling, Liger fusion,
@@ -97,14 +100,17 @@ raw bytes → Dl window + corruption → model assembled from nn / nn2 blocks
 ```
 
 Notebooks duplicate layer definitions on purpose: each one is a snapshot of the model at that point
-in the search. `nn2.py` is the closest thing to a stable surface; `nn.py` is kept because many
-notebooks still import it.
+in the search. `nn.py` and `nn2.py` are the two import surfaces, and most notebooks pull helpers
+from one of them (`from nn import …`, `from nn2 import *`) while redefining the model classes they
+are studying.
 
 ## How to develop
 
 This repository is a notebook archive, not an installed package.
 
 - Run notebooks with Jupyter from the repository root so `import nn` / `import nn2` resolves.
+  `nn2.py` imports `triton` and `IPython.display` at module load, so both must be installed even
+  for blocks that never touch them.
 - `nn.py` imports FlashAttention at module load. `nn2.py` imports it optionally and only needs it
   for the FlashAttention-based attention layer.
 - There is no test suite, no CI, no lockfile and no build step. The smoke test above is the quickest
@@ -113,6 +119,9 @@ This repository is a notebook archive, not an installed package.
   in the notebook you are running; do not expect a global config file.
 - Reusing a block in a new experiment is the intended workflow. Copy the block into a new notebook
   first, then fold the useful part back into `nn2.py` only when it is clearly stable.
+- Some blocks in `nn2.py` drifted away from the notebook copies that actually ran: `Cumdecay` and
+  `cumdecay_fuse` reference helpers that no longer exist under those names (`cum`, `hr`, `normr`,
+  `tl.prograc_id`). Trust the notebook, not the module, when the two disagree.
 
 ## How to contribute
 
@@ -130,7 +139,8 @@ welcome:
 
 - [x] First-generation layer kit (`nn.py`) with windowed/grouped attention, SwiGLU, RoPE and remap.
 - [x] Second-generation kit (`nn2.py`) with dynamic convolution, LoRA and cumulative-state layers.
-- [x] Fused Triton kernel for signed cumulative decay.
+- [x] Signed cumulative-decay prototype with a fused Triton kernel (log-space decay; the numbered
+      notebooks do not use it).
 - [x] Byte-level memmap loader with random-byte corruption targets.
 - [x] 68 notebooks covering model shapes, pooling hierarchies, Liger variants and kernel prototypes.
 - [x] AGPL-3.0 license, project mark and public-facing documentation.
