@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
+  <title id="title">cvorat</title>
+  <desc id="desc">A cyan C and lime V monogram for cvorat, with two small byte dots.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="c" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a5f3fc"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="v" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d9f99d"/>
+      <stop offset="1" stop-color="#84cc16"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#bg)"/>
+  <rect x="9" y="9" width="238" height="238" rx="55" fill="none" stroke="#1e293b" stroke-width="2"/>
+  <path d="M150 74 A62 62 0 1 0 150 182" fill="none" stroke="url(#c)" stroke-width="20" stroke-linecap="round" filter="url(#glow)"/>
+  <path d="M143 98 L170 170 L197 98" fill="none" stroke="url(#v)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="192" cy="53" r="7" fill="#a3e635"/>
+  <circle cx="210" cy="35" r="4" fill="#67e8f9"/>
+</svg>
